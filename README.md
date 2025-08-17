@@ -21,3 +21,24 @@ Automated daily cryptocurrency market analysis system that generates professiona
 ### 2. Environment Variables
 
 Set these as GitHub Secrets:
+GROK_API_KEY=your_grok_api_key
+NOTION_TOKEN=your_notion_integration_token
+NOTION_DATABASE_ID=your_notion_database_id
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
+
+### 3. Notion Database Setup
+
+Create a database with these properties:
+- **Title** (Title)
+- **Date** (Date) 
+- **Status** (Select: Draft, Published)
+
+### 4. Running
+
+The bot runs automatically daily at 8 AM UTC via GitHub Actions.
+
+To test manually:
+```bash
+npm install
+npm start
