@@ -48,37 +48,12 @@ function extractHighlights(report) {
   try {
     const lines = report.split('\n').filter(line => line.trim());
     
-    // Look for important indicators
+    // Look for key trading suggestions and price predictions
     const highlights = lines.filter(line => 
-      line.includes('📈') || 
-      line.includes('📉') || 
-      line.includes('🔥') || 
-      line.includes('⚠️') ||
-      line.includes('%') ||
-      line.toLowerCase().includes('alert') ||
-      line.toLowerCase().includes('breakout') ||
-      line.toLowerCase().includes('support') ||
-      line.toLowerCase().includes('resistance')
-    ).slice(0, 5); // Get top 5 highlights
-    
-    if (highlights.length > 0) {
-      return `🔍 *Key Highlights:*\n\n${highlights.join('\n')}`;
-    }
-    
-    // Fallback to first few meaningful lines
-    const meaningfulLines = lines
-      .filter(line => line.length > 20 && !line.startsWith('#'))
-      .slice(0, 3);
-    
-    return meaningfulLines.length > 0 
-      ? `📊 *Market Summary:*\n\n${meaningfulLines.join('\n\n')}`
-      : '📈 Daily crypto market analysis completed - check full report for details.';
-      
-  } catch (error) {
-    console.error('Error extracting highlights:', error);
-    return '📊 Crypto market analysis completed - check full report for details.';
-  }
-}
+      line.toLowerCase().includes('buy') || 
+      line.toLowerCase().includes('sell') || 
+      line.toLowerCase().includes('hold') ||
+      line.includes('
 
 // Run the report
 if (require.main === module) {
