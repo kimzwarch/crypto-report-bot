@@ -60,28 +60,53 @@ These predictions and suggestions are based on insights from the specified Twitt
   try {
     console.log('🤖 Calling Grok AI API...');
     
-    const response = await axios.post('https://api.x.ai/v1/chat/completions', {
-      messages: [
-        {
-          role: "system",
-          content: "You are an advanced cryptocurrency tracking system with access to real-time market data from CoinGecko and CoinMarketCap. You follow and analyze insights from top crypto Twitter accounts including @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, and @cryptorinweb3. Provide accurate price predictions and trading suggestions based on current market data and sentiment analysis from these key influencers. Format your response as a professional tracking report with clear tables and actionable insights."
-        },
-        {
-          role: "user", 
-          content: prompt
-        }
-      ],
-      model: "grok-beta",
-      max_tokens: 4000,
-      temperature: 0.7,
-      stream: false
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      timeout: 30000 // 30 second timeout
-    });
+    // Try different model names that might work
+    const possibleModels = ['grok-2', 'grok-1', 'grok', 'grok-beta-2024'];
+    let response = null;
+    let lastError = null;
+
+    for (const model of possibleModels) {
+      try {
+        console.log(`Trying model: ${model}`);
+        
+        response = await axios.post('https://api.x.ai/v1/chat/completions', {
+          messages: [
+            {
+              role: "system",
+              content: "You are an advanced cryptocurrency tracking system with access to real-time market data from CoinGecko and CoinMarketCap. You follow and analyze insights from top crypto Twitter accounts including @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, and @cryptorinweb3. Provide accurate price predictions and trading suggestions based on current market data and sentiment analysis from these key influencers. Format your response as a professional tracking report with clear tables and actionable insights."
+            },
+            {
+              role: "user", 
+              content: prompt
+            }
+          ],
+          model: model,
+          max_tokens: 4000,
+          temperature: 0.7,
+          stream: false
+        }, {
+          headers: {
+            'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 30000 // 30 second timeout
+        });
+
+        // If we get here, the request was successful
+        console.log(`✅ Successfully used model: ${model}`);
+        break;
+
+      } catch (error) {
+        console.log(`❌ Model ${model} failed: ${error.response?.status || error.message}`);
+        lastError = error;
+        continue;
+      }
+    }
+
+    // If all models failed, throw the last error
+    if (!response) {
+      throw lastError || new Error('All model attempts failed');
+    }
 
     if (!response.data?.choices?.[0]?.message?.content) {
       throw new Error('Invalid response format from Grok API');
@@ -101,6 +126,13 @@ These predictions and suggestions are based on insights from the specified Twitt
         statusText: error.response.statusText,
         data: error.response.data
       });
+      
+      // If it's an API key issue, provide helpful message
+      if (error.response.status === 401) {
+        throw new Error('Invalid Grok API key. Please check your GROK_API_KEY secret.');
+      } else if (error.response.status === 404) {
+        throw new Error('Grok API endpoint or model not found. The API might have changed.');
+      }
     }
     
     throw new Error(`Failed to generate crypto report: ${error.message}`);
