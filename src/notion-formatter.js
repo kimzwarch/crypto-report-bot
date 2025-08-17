@@ -25,7 +25,7 @@ async function createNotionPage(reportContent) {
           title: [
             {
               text: {
-                content: `🚀 Crypto Daily Report - ${dateString}`,
+                content: `🎯 AIXBT Tracker Report - ${dateString}`,
               },
             },
           ],
@@ -50,7 +50,7 @@ async function createNotionPage(reportContent) {
               {
                 type: 'text',
                 text: {
-                  content: `📊 Daily Crypto Analysis - ${dateString}`,
+                  content: `📊 AIXBT Crypto Tracker - ${dateString}`,
                 },
                 annotations: {
                   color: 'blue'
@@ -78,7 +78,7 @@ async function createNotionPage(reportContent) {
               {
                 type: 'text',
                 text: {
-                  content: `Generated automatically on ${new Date().toLocaleString()} by Crypto Report Bot 🤖`,
+                  content: `Generated automatically on ${new Date().toLocaleString()} by AIXBT Tracker Bot 🎯`,
                 },
                 annotations: {
                   italic: true,
