@@ -1,1 +1,34 @@
-
+{
+  "name": "crypto-report-automation",
+  "version": "1.0.0",
+  "description": "Automated daily cryptocurrency report system using Grok AI, Notion, and Telegram",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node src/main.js",
+    "dev": "nodemon src/main.js"
+  },
+  "keywords": [
+    "cryptocurrency",
+    "automation", 
+    "grok",
+    "notion",
+    "telegram",
+    "trading",
+    "analysis"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "axios": "^1.6.2",
+    "node-telegram-bot-api": "^0.64.0",
+    "puppeteer": "^21.6.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
