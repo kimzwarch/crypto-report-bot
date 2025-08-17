@@ -8,47 +8,54 @@ async function generateCryptoReport() {
     day: 'numeric'
   });
 
-  const prompt = `Generate a comprehensive daily cryptocurrency market analysis report for ${currentDate}. Include:
+  const prompt = `Generate a daily cryptocurrency tracking report in the following format:
 
-## 📊 Market Overview
-- Overall market sentiment and key metrics
-- Total market cap changes
-- Bitcoin dominance
-- Fear & Greed Index assessment
+# AIXBT Tracker Report
+**Date:** ${currentDate}
 
-## 🚀 Top Performers (24h)
-- Best performing cryptocurrencies
-- Percentage gains and volume data
-- Reasons for price movements
+## Price Predictions and Suggestions
 
-## 📉 Market Movers & Shakers
-- Significant price movements (both up and down)
-- Unusual volume spikes
-- New listings or delistings
+Create a detailed table with the following columns for each cryptocurrency:
+- **Coin**
+- **Current Price (USD)** 
+- **Short-Term Predicted Price (USD)** (30 days)
+- **Short-Term Suggestion** (Buy, Sell, or Hold)
+- **Short-Term Justification**
+- **Long-Term Predicted Price (USD)** (6 months) 
+- **Long-Term Suggestion** (Buy, Sell, or Hold)
+- **Long-Term Justification**
 
-## 🔍 Technical Analysis
-- Bitcoin (BTC) key levels
-- Ethereum (ETH) technical outlook  
-- Important support/resistance levels
-- Chart patterns to watch
+### Required Cryptocurrencies:
+**Primary List:** BTC, ETH, SOL, NEAR, ICP, CRV, HIVE, AVAX, LINK, DOGE, FLOKI, ADA
 
-## 📰 Market News Impact
-- Recent news affecting crypto prices
-- Regulatory updates
-- Institutional adoption news
-- DeFi/NFT developments
+**Additional Tokens:** Include 5 other high-performing tokens from the top 100 market cap on CoinGecko/CoinMarketCap that show strong potential.
 
-## ⚠️ Risk Assessment
-- Current market risks
-- Volatility indicators
-- Liquidation levels to watch
+### Requirements:
+- Use **REAL-TIME PRICES** from CoinGecko or CoinMarketCap data (no hypothetical current prices)
+- Base predictions on insights from these Twitter accounts:
+  @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, @cryptorinweb3
+- Provide specific justifications based on recent sentiment and analysis from these accounts
 
-## 🔮 Tomorrow's Outlook
-- Key events to monitor
-- Expected market catalysts
-- Price targets and predictions
+## Related Posts from Tracked Accounts
+Summarize recent insights from the specified Twitter accounts related to each cryptocurrency, providing context for both short-term and long-term predictions.
 
-Format with clear headings, bullet points, emojis for visual appeal, and specific data points. Be professional but engaging. Include percentage changes and price levels where relevant.`;
+## How to Use This Tracker
+**Short-Term (30 days):**
+- **Buy:** Indicates potential growth based on short-term trends
+- **Sell:** Suggests potential decline in the short term  
+- **Hold:** Reflects uncertainty or balanced short-term outlook
+
+**Long-Term (6 months):**
+- **Buy:** Indicates potential growth based on long-term trends
+- **Sell:** Suggests potential decline in the long term
+- **Hold:** Reflects uncertainty or balanced long-term outlook
+
+**Justifications:** Based on latest insights from tracked accounts reflecting market sentiment, on-chain data, and technical factors.
+
+## Disclaimer
+These predictions and suggestions are based on insights from the specified Twitter accounts. They are NOT financial advice. Cryptocurrency markets are highly volatile - conduct your own research before making decisions.
+
+**Important:** Use real-time data from CoinGecko.com or CoinMarketCap.com for current prices. Future price predictions should be based on analysis from the referenced Twitter accounts.`;
 
   try {
     console.log('🤖 Calling Grok AI API...');
@@ -57,7 +64,7 @@ Format with clear headings, bullet points, emojis for visual appeal, and specifi
       messages: [
         {
           role: "system",
-          content: "You are a professional cryptocurrency market analyst with deep expertise in technical analysis, market sentiment, and blockchain technology. Provide detailed, accurate, and actionable market analysis with specific data points, price levels, and trading insights. Use emojis strategically for visual appeal but maintain professional tone."
+          content: "You are an advanced cryptocurrency tracking system with access to real-time market data from CoinGecko and CoinMarketCap. You follow and analyze insights from top crypto Twitter accounts including @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, and @cryptorinweb3. Provide accurate price predictions and trading suggestions based on current market data and sentiment analysis from these key influencers. Format your response as a professional tracking report with clear tables and actionable insights."
         },
         {
           role: "user", 
