@@ -15,7 +15,7 @@ async function sendToTelegram(screenshot, highlights, notionUrl) {
       day: 'numeric'
     });
     
-    const caption = `🚀 *Daily Crypto Report - ${currentDate}*\n\n${highlights}\n\n📖 [View Full Report on Notion](${notionUrl})\n\n🤖 _Generated automatically by Crypto Report Bot_`;
+    const caption = `🎯 *AIXBT Crypto Tracker - ${currentDate}*\n\n${highlights}\n\n📊 [View Complete Trading Analysis](${notionUrl})\n\n🤖 _Automated AIXBT tracking system_`;
     
     // Send screenshot with caption
     await bot.sendPhoto(chatId, screenshot, {
