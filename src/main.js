@@ -53,7 +53,20 @@ function extractHighlights(report) {
       line.toLowerCase().includes('buy') || 
       line.toLowerCase().includes('sell') || 
       line.toLowerCase().includes('hold') ||
-      line.includes('
+      line.includes('$') ||
+      line.toLowerCase().includes('btc') ||
+      line.toLowerCase().includes('eth')
+    ).slice(0, 5); // Take first 5 relevant lines
+    
+    return highlights.length > 0 
+      ? highlights.join('\n') 
+      : 'Daily crypto analysis completed. Check the full report for details.';
+      
+  } catch (error) {
+    console.error('Error extracting highlights:', error);
+    return 'Daily crypto report generated successfully.';
+  }
+}
 
 // Run the report
 if (require.main === module) {
