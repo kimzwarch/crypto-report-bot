@@ -4,9 +4,12 @@ const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
+// Notion's character limit for a single rich text object (like in a code block)
+const NOTION_BLOCK_CHAR_LIMIT = 2000;
+
 async function createNotionPage(reportContent) {
   try {
-    console.log('📝 Creating Notion page with new, simplified formatting logic...');
+    console.log('📝 Creating Notion page with new chunking logic...');
     
     const currentDate = new Date();
     const dateString = currentDate.toLocaleDateString('en-US', {
@@ -39,8 +42,7 @@ async function createNotionPage(reportContent) {
       }
     };
 
-    // --- 2. Clean and Prepare Report Content ---
-    // Remove any conversational text before the main report header
+    // --- 2. Clean Report Content ---
     let finalReportContent = reportContent;
     const reportStartIndex = reportContent.indexOf('# 📊 AIXBT Tracker Report');
     if (reportStartIndex > 0) {
@@ -48,75 +50,72 @@ async function createNotionPage(reportContent) {
         finalReportContent = reportContent.substring(reportStartIndex);
     }
 
-    // --- 3. Construct Notion Blocks (Simplified Method) ---
-    // The most reliable way to preserve table formatting is to use a code block.
-    const contentBlocks = [
+    // --- 3. Split Content into Chunks to Respect API Limits ---
+    const contentChunks = [];
+    let currentChunk = '';
+    const lines = finalReportContent.split('\n');
+
+    for (const line of lines) {
+      // Check if adding the next line would exceed the limit
+      if (currentChunk.length + line.length + 1 > NOTION_BLOCK_CHAR_LIMIT) {
+        contentChunks.push(currentChunk);
+        currentChunk = '';
+      }
+      currentChunk += line + '\n';
+    }
+    // Add the last remaining chunk
+    if (currentChunk) {
+      contentChunks.push(currentChunk);
+    }
+    console.log(`Report content split into ${contentChunks.length} chunks.`);
+
+    // --- 4. Construct Notion Blocks ---
+    const initialBlocks = [
       {
         object: 'block',
         type: 'heading_1',
         heading_1: {
-          rich_text: [
-            {
-              type: 'text',
-              text: {
-                content: `📊 AIXBT Crypto Tracker - ${dateString}`,
-              },
-            },
-          ],
+          rich_text: [{ type: 'text', text: { content: `📊 AIXBT Crypto Tracker - ${dateString}` } }],
         },
       },
-      {
-        object: 'block',
-        type: 'divider',
-        divider: {}
-      },
-      {
-        // Use a code block to perfectly preserve the table's formatting
-        object: 'block',
-        type: 'code',
-        code: {
-          rich_text: [{
-            type: 'text',
-            text: {
-              content: finalReportContent,
-            }
-          }],
-          language: 'markdown' // Set language for potential syntax highlighting
-        }
-      },
-      {
-        object: 'block',
-        type: 'divider',
-        divider: {}
-      },
-      {
-        object: 'block',
-        type: 'paragraph',
-        paragraph: {
-          rich_text: [
-            {
-              type: 'text',
-              text: {
-                content: `Generated automatically on ${new Date().toLocaleString()} by AIXBT Tracker Bot 🎯`,
-              },
-              annotations: {
-                italic: true,
-                color: 'gray'
-              }
-            },
-          ],
-        },
-      },
+      { object: 'block', type: 'divider', divider: {} }
     ];
 
-    // --- 4. Create the Notion Page ---
-    console.log(`🏗️ Creating page with ${contentBlocks.length} blocks...`);
-    const response = await notion.pages.create({
-      parent: {
-        database_id: process.env.NOTION_DATABASE_ID,
+    const contentBlocks = contentChunks.map(chunk => ({
+      object: 'block',
+      type: 'code',
+      code: {
+        rich_text: [{ type: 'text', text: { content: chunk } }],
+        language: 'markdown',
       },
+    }));
+
+    const footerBlocks = [
+        { object: 'block', type: 'divider', divider: {} },
+        {
+            object: 'block',
+            type: 'paragraph',
+            paragraph: {
+                rich_text: [
+                    {
+                        type: 'text',
+                        text: { content: `Generated automatically on ${new Date().toLocaleString()} by AIXBT Tracker Bot 🎯` },
+                        annotations: { italic: true, color: 'gray' }
+                    },
+                ],
+            },
+        },
+    ];
+
+    const allBlocks = [...initialBlocks, ...contentBlocks, ...footerBlocks];
+
+    // --- 5. Create the Notion Page ---
+    // Notion has a limit of 100 blocks per request, this should be safe.
+    console.log(`🏗️ Creating page with ${allBlocks.length} total blocks...`);
+    const response = await notion.pages.create({
+      parent: { database_id: process.env.NOTION_DATABASE_ID },
       properties: pageProperties,
-      children: contentBlocks, // Send all blocks at once
+      children: allBlocks,
     });
 
     console.log(`✅ Created Notion page with ID: ${response.id}`);
