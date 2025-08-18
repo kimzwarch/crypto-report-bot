@@ -72,62 +72,87 @@ async function createNotionPage(reportContent) {
 
     console.log('🏗️ Creating page with properties:', Object.keys(pageProperties));
     
+    // Parse content into blocks
+    const contentBlocks = parseMarkdownToNotionBlocks(reportContent);
+    console.log(`📊 Total content blocks generated: ${contentBlocks.length}`);
+    
+    // Initial blocks for the page (header + divider)
+    const initialBlocks = [
+      {
+        object: 'block',
+        type: 'heading_1',
+        heading_1: {
+          rich_text: [
+            {
+              type: 'text',
+              text: {
+                content: `📊 AIXBT Crypto Tracker - ${dateString}`,
+              },
+              annotations: {
+                color: 'blue'
+              }
+            },
+          ],
+        },
+      },
+      {
+        object: 'block',
+        type: 'divider',
+        divider: {}
+      }
+    ];
+
+    // Footer blocks
+    const footerBlocks = [
+      {
+        object: 'block',
+        type: 'divider',
+        divider: {}
+      },
+      {
+        object: 'block',
+        type: 'paragraph',
+        paragraph: {
+          rich_text: [
+            {
+              type: 'text',
+              text: {
+                content: `Generated automatically on ${new Date().toLocaleString()} by AIXBT Tracker Bot 🎯`,
+              },
+              annotations: {
+                italic: true,
+                color: 'gray'
+              }
+            },
+          ],
+        },
+      },
+    ];
+
+    // Combine initial blocks with first batch of content (limit to 95 blocks total)
+    const maxInitialBlocks = 95; // Leave room for header and footer
+    const firstBatchBlocks = [...initialBlocks, ...contentBlocks.slice(0, maxInitialBlocks - initialBlocks.length - footerBlocks.length), ...footerBlocks];
+    
+    console.log(`📝 Creating page with ${firstBatchBlocks.length} initial blocks`);
+    
+    // Create the page with initial content
     const response = await notion.pages.create({
       parent: {
         database_id: process.env.NOTION_DATABASE_ID,
       },
       properties: pageProperties,
-      children: [
-        {
-          object: 'block',
-          type: 'heading_1',
-          heading_1: {
-            rich_text: [
-              {
-                type: 'text',
-                text: {
-                  content: `📊 AIXBT Crypto Tracker - ${dateString}`,
-                },
-                annotations: {
-                  color: 'blue'
-                }
-              },
-            ],
-          },
-        },
-        {
-          object: 'block',
-          type: 'divider',
-          divider: {}
-        },
-        ...parseMarkdownToNotionBlocks(reportContent),
-        {
-          object: 'block',
-          type: 'divider',
-          divider: {}
-        },
-        {
-          object: 'block',
-          type: 'paragraph',
-          paragraph: {
-            rich_text: [
-              {
-                type: 'text',
-                text: {
-                  content: `Generated automatically on ${new Date().toLocaleString()} by AIXBT Tracker Bot 🎯`,
-                },
-                annotations: {
-                  italic: true,
-                  color: 'gray'
-                }
-              },
-            ],
-          },
-        },
-      ],
+      children: firstBatchBlocks,
     });
 
     console.log(`✅ Created Notion page with ID: ${response.id}`);
+    
+    // If there are remaining content blocks, append them in batches
+    const remainingBlocks = contentBlocks.slice(maxInitialBlocks - initialBlocks.length - footerBlocks.length);
+    
+    if (remainingBlocks.length > 0) {
+      console.log(`📝 Appending ${remainingBlocks.length} remaining blocks in batches...`);
+      await appendBlocksInBatches(response.id, remainingBlocks);
+    }
     
     return {
       id: response.id,
@@ -143,6 +168,29 @@ async function createNotionPage(reportContent) {
     }
     
     throw new Error(`Failed to create Notion page: ${error.message}`);
+  }
+}
+
+async function appendBlocksInBatches(pageId, blocks) {
+  const batchSize = 100; // Notion's limit
+  
+  for (let i = 0; i < blocks.length; i += batchSize) {
+    const batch = blocks.slice(i, i + batchSize);
+    console.log(`📝 Appending batch ${Math.floor(i/batchSize) + 1}: ${batch.length} blocks`);
+    
+    try {
+      await notion.blocks.children.append({
+        block_id: pageId,
+        children: batch,
+      });
+      
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+    } catch (batchError) {
+      console.error(`❌ Error appending batch ${Math.floor(i/batchSize) + 1}:`, batchError);
+      // Continue with next batch instead of failing completely
+    }
   }
 }
 
@@ -185,7 +233,7 @@ function parseMarkdownToNotionBlocks(markdown) {
       continue;
     }
 
-    // Handle table detection
+    // Handle table detection - convert to simple list format for Notion compatibility
     if (trimmedLine.includes('|') && !inTable) {
       inTable = true;
       tableRows = [trimmedLine];
@@ -194,7 +242,7 @@ function parseMarkdownToNotionBlocks(markdown) {
       tableRows.push(trimmedLine);
       continue;
     } else if (inTable && !trimmedLine.includes('|')) {
-      // End of table - convert to bulleted list for now (Notion API tables are complex)
+      // End of table - convert to bulleted list
       inTable = false;
       tableRows.forEach(row => {
         if (row.trim() && !row.includes('---')) {
@@ -221,7 +269,7 @@ function parseMarkdownToNotionBlocks(markdown) {
 
     // Handle different line types
     if (trimmedLine === '') {
-      // Skip empty lines
+      // Skip empty lines to reduce block count
       continue;
     } else if (trimmedLine.startsWith('# ')) {
       blocks.push({
@@ -268,7 +316,7 @@ function parseMarkdownToNotionBlocks(markdown) {
           }],
         },
       });
-    } else {
+    } else if (trimmedLine.length > 0) {
       // Regular paragraph - handle markdown formatting
       const richText = parseInlineMarkdown(line);
       blocks.push({
@@ -286,7 +334,86 @@ function parseMarkdownToNotionBlocks(markdown) {
     blocks.push(...currentList);
   }
 
+  // If still too many blocks, consolidate some content
+  if (blocks.length > 90) {
+    console.log(`⚠️ Generated ${blocks.length} blocks, consolidating to fit Notion limits...`);
+    return consolidateBlocks(blocks, 90);
+  }
+
   return blocks;
+}
+
+function consolidateBlocks(blocks, maxBlocks) {
+  if (blocks.length <= maxBlocks) return blocks;
+  
+  const consolidated = [];
+  let currentGroup = [];
+  let groupText = [];
+  
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    
+    // Keep headings and important blocks separate
+    if (block.type === 'heading_1' || block.type === 'heading_2' || block.type === 'heading_3' || block.type === 'divider') {
+      // Flush current group if exists
+      if (groupText.length > 0) {
+        consolidated.push({
+          object: 'block',
+          type: 'paragraph',
+          paragraph: {
+            rich_text: [{ type: 'text', text: { content: groupText.join('\n') } }]
+          }
+        });
+        groupText = [];
+      }
+      
+      consolidated.push(block);
+    } else {
+      // Consolidate regular paragraphs
+      const text = extractTextFromBlock(block);
+      if (text) {
+        groupText.push(text);
+        
+        // Flush group when it gets too long or we're near the end
+        if (groupText.length >= 5 || consolidated.length + Math.ceil((blocks.length - i) / 5) >= maxBlocks) {
+          consolidated.push({
+            object: 'block',
+            type: 'paragraph',
+            paragraph: {
+              rich_text: [{ type: 'text', text: { content: groupText.join('\n') } }]
+            }
+          });
+          groupText = [];
+        }
+      }
+    }
+    
+    // Stop if we're approaching the limit
+    if (consolidated.length >= maxBlocks - 2) break;
+  }
+  
+  // Flush any remaining group
+  if (groupText.length > 0) {
+    consolidated.push({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [{ type: 'text', text: { content: groupText.join('\n') } }]
+      }
+    });
+  }
+  
+  console.log(`📝 Consolidated from ${blocks.length} to ${consolidated.length} blocks`);
+  return consolidated;
+}
+
+function extractTextFromBlock(block) {
+  if (block.type === 'paragraph' && block.paragraph?.rich_text) {
+    return block.paragraph.rich_text.map(rt => rt.text?.content || '').join('');
+  } else if (block.type === 'bulleted_list_item' && block.bulleted_list_item?.rich_text) {
+    return '• ' + block.bulleted_list_item.rich_text.map(rt => rt.text?.content || '').join('');
+  }
+  return '';
 }
 
 function parseInlineMarkdown(text) {
