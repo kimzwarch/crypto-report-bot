@@ -2,6 +2,21 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 
+/**
+ * Escapes special characters in a string for Telegram's Markdown parser.
+ * This prevents formatting errors when the text contains characters like '*' or '_'.
+ * @param {string} text The text to sanitize.
+ * @returns {string} The sanitized text.
+ */
+function escapeMarkdown(text) {
+  if (!text) {
+    return '';
+  }
+  // For the legacy 'Markdown' parse mode, we primarily need to escape these characters.
+  const charsToEscape = /([_*`\[])/g;
+  return text.replace(charsToEscape, '\\$1');
+}
+
 async function sendToTelegram(screenshot, highlights, notionUrl) {
   const chatId = process.env.TELEGRAM_CHAT_ID;
   
@@ -15,7 +30,10 @@ async function sendToTelegram(screenshot, highlights, notionUrl) {
       day: 'numeric'
     });
     
-    const caption = `🎯 *AIXBT Crypto Tracker - ${currentDate}*\n\n${highlights}\n\n📊 [View Complete Trading Analysis](${notionUrl})\n\n🤖 _Automated AIXBT tracking system_`;
+    // Sanitize the highlights content to prevent Markdown parsing errors
+    const sanitizedHighlights = escapeMarkdown(highlights);
+    
+    const caption = `🎯 *AIXBT Crypto Tracker - ${currentDate}*\n\n${sanitizedHighlights}\n\n📊 [View Complete Trading Analysis](${notionUrl})\n\n🤖 _Automated AIXBT tracking system_`;
     
     // Send screenshot with caption
     await bot.sendPhoto(chatId, screenshot, {
