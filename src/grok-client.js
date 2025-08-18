@@ -8,119 +8,168 @@ async function generateCryptoReport() {
     day: 'numeric'
   });
 
-  const prompt = `Generate a daily cryptocurrency tracking report formatted for Notion with rich visuals and emojis. Format the report EXACTLY as shown below:
+  const prompt = `Generate a comprehensive daily cryptocurrency tracking report for Notion with professional formatting and real-time market data.
 
 # 📊 AIXBT Crypto Tracker Report
 **📅 Date:** ${currentDate}
 
-## 📈 Price Predictions & Trading Signals
+## 🚨 CRITICAL REQUIREMENTS
+- **MANDATORY**: Fetch LIVE prices from CoinGecko.com or CoinMarketCap.com APIs 
+- **MANDATORY**: Use current market data - NO hypothetical or cached prices
+- **MANDATORY**: Base analysis on RECENT social sentiment and on-chain data
 
-**🚨 CRITICAL REQUIREMENT: Use LIVE/REAL-TIME prices from CoinGecko.com or CoinMarketCap.com API data. DO NOT use outdated or hypothetical prices.**
+## 📈 Cryptocurrency Analysis
 
-Create a comprehensive analysis table for each cryptocurrency with these columns:
+Analyze each asset using this EXACT format:
 
-### 🪙 Primary Cryptocurrencies Analysis
+### 🟠 Bitcoin (BTC)
+| **Metric** | **Value** | **Analysis** |
+|------------|-----------|--------------|
+| **Current Price** | $[LIVE PRICE] | [Price context] |
+| **24h Change** | [%] | [Trend analysis] |
+| **30D Target** | $[target] | ✅ BUY / ❌ SELL / ⏸️ HOLD |
+| **6M Target** | $[target] | ✅ BUY / ❌ SELL / ⏸️ HOLD |
+| **Short-Term Reason** | [1-2 sentences based on tracked accounts] |
+| **Long-Term Reason** | [1-2 sentences based on fundamentals] |
 
-For each coin, provide this structured format:
+### 🔵 Ethereum (ETH)
+| **Metric** | **Value** | **Analysis** |
+|------------|-----------|--------------|
+| **Current Price** | $[LIVE PRICE] | [Price context] |
+| **24h Change** | [%] | [Trend analysis] |
+| **30D Target** | $[target] | ✅ BUY / ❌ SELL / ⏸️ HOLD |
+| **6M Target** | $[target] | ✅ BUY / ❌ SELL / ⏸️ HOLD |
+| **Short-Term Reason** | [Analysis based on tracked accounts] |
+| **Long-Term Reason** | [Fundamental analysis] |
 
-**Bitcoin (BTC)** 🟠
-- 💵 **Current Price:** $[REAL-TIME PRICE from CoinGecko/CMC]
-- 🔮 **30D Target:** $[predicted price]
-- 📌 **Short-Term Action:** ✅ BUY / ❌ SELL / ⏸️ HOLD
-- 🧩 **ST Justification:** [Based on tracked accounts insights - 2-3 sentences]
-- 🚀 **6M Target:** $[predicted price] 
-- 🔒 **Long-Term Action:** ✅ BUY / ❌ SELL / ⏸️ HOLD
-- 🧩 **LT Justification:** [Based on fundamental analysis - 2-3 sentences]
+Continue this EXACT table format for: **Solana (SOL)**, **NEAR Protocol (NEAR)**, **Internet Computer (ICP)**, **Curve (CRV)**, **Hive (HIVE)**, **Avalanche (AVAX)**, **Chainlink (LINK)**, **Dogecoin (DOGE)**, **Floki (FLOKI)**, **Cardano (ADA)**
 
-**Ethereum (ETH)** 🔵
-[Same format as above]
+## 🌟 High-Potential Tokens (Top 5)
+Select 5 promising tokens from top 100 market cap and analyze using the same table format.
 
-**Solana (SOL)** 🟣
-[Same format as above]
+## 📊 Market Intelligence Dashboard
 
-Continue this format for: NEAR, ICP, CRV, HIVE, AVAX, LINK, DOGE, FLOKI, ADA
+### 🐋 Whale Activity Monitor
+- **Major Movements**: [Significant whale transactions and institutional flows]
+- **Notable Wallets**: [Key wallet activities affecting market sentiment]
 
-### 🌟 Additional High-Potential Tokens
-Select 5 promising tokens from top 100 market cap and analyze using the same format.
+### 📈 On-Chain Metrics Summary  
+- **Network Activity**: [Transaction volumes, active addresses]
+- **DeFi Metrics**: [TVL changes, yield farming trends]
+- **Development Activity**: [GitHub commits, protocol upgrades]
 
-### 📰 Key Market Insights from Tracked Accounts
+### 💬 Social Sentiment Analysis
+- **Bullish Signals**: [Positive sentiment from tracked accounts]
+- **Bearish Concerns**: [Negative sentiment and warnings]
+- **Neutral/Mixed**: [Uncertain market conditions]
 
-**🐋 Whale Activity:**
-- [Summarize major whale movements and institutional flows]
+### 🔥 Trending Narratives
+- **Hot Topics**: [Emerging crypto trends and discussions]
+- **Sector Rotation**: [Capital flow between different crypto sectors]
 
-**📊 On-Chain Data:**
-- [Key on-chain metrics and trends]
+## 📌 Trading Strategy Guide
 
-**💬 Sentiment Analysis:**
-- [Overall market sentiment from tracked accounts]
+### ⚡ Short-Term Signals (30 Days)
+- **✅ STRONG BUY**: Exceptional momentum with multiple positive catalysts
+- **🟢 BUY**: Solid momentum with positive technical/fundamental signals  
+- **⏸️ HOLD**: Mixed signals requiring patience and monitoring
+- **🟡 CAUTION**: Uncertain conditions with conflicting indicators
+- **❌ SELL**: Clear bearish signals indicating potential decline
 
-**🔥 Trending Narratives:**
-- [Hot topics and emerging trends]
+### 🎯 Long-Term Outlook (6 Months)
+- **✅ ACCUMULATE**: Strong fundamentals with significant growth potential
+- **🟢 BUY & HOLD**: Solid fundamentals with steady growth expected
+- **⏸️ MONITOR**: Stable but limited upside, watch for catalysts
+- **🟡 REASSESS**: Fundamental concerns requiring closer evaluation
+- **❌ AVOID**: Serious fundamental issues or competitive threats
 
-## 📌 How to Use This Tracker
+## ⚠️ Risk Management Framework
 
-**Short-Term (30 Days)** ⚡
-- ✅ **BUY:** Strong momentum, positive catalysts expected
-- ❌ **SELL:** Bearish signals, potential short-term decline
-- ⏸️ **HOLD:** Mixed signals, wait for clearer direction
+### 🎲 Portfolio Allocation Guidance
+- **High Conviction (BTC/ETH)**: 40-60% allocation
+- **Large Cap Alts**: 20-30% allocation  
+- **Mid Cap Opportunities**: 10-20% allocation
+- **Small Cap/Speculative**: 5-10% maximum
 
-**Long-Term (6 Months)** 🎯
-- ✅ **BUY:** Strong fundamentals, adoption growth expected
-- ❌ **SELL:** Fundamental concerns, competitive threats
-- ⏸️ **HOLD:** Stable outlook, limited upside/downside
+### 🛡️ Risk Controls
+- **Stop Losses**: Recommended levels for position protection
+- **Take Profits**: Strategic exit points for profit realization
+- **Position Sizing**: Maximum exposure per asset class
 
-## ⚠️ Important Disclaimers
+## 📋 Data Sources & Methodology
 
-**🔍 Data Sources:** Real-time prices from CoinGecko.com and CoinMarketCap.com
-**📱 Social Intelligence:** Insights aggregated from @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, @cryptorinweb3
+**🔍 Price Data Sources**: 
+- Primary: CoinGecko.com API (real-time)
+- Secondary: CoinMarketCap.com API (verification)
+- Tertiary: DEX aggregators for accurate pricing
 
-**🚨 Risk Warning:** This analysis is for educational purposes only and NOT financial advice. Cryptocurrency markets are highly volatile and unpredictable. Always conduct your own research (DYOR) before making any investment decisions.
+**📱 Intelligence Sources**: 
+@aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, @cryptorinweb3
+
+**📊 Analysis Framework**:
+- Technical Analysis: Chart patterns, support/resistance levels
+- Fundamental Analysis: Network metrics, adoption trends  
+- Sentiment Analysis: Social media, news sentiment scoring
+- On-Chain Analysis: Transaction data, whale movements
+
+## 🚨 Legal Disclaimers
+
+**⚠️ IMPORTANT NOTICE**: This report is for EDUCATIONAL PURPOSES ONLY and does NOT constitute financial advice. Cryptocurrency investments carry extreme volatility and risk of total loss.
+
+**🔥 Risk Warning**: 
+- Crypto markets are highly speculative and volatile
+- Past performance does not guarantee future results  
+- Only invest what you can afford to lose completely
+- Always conduct your own research (DYOR) before investing
+- Consider consulting with licensed financial advisors
+
+**📊 Data Accuracy**: While we strive for accuracy, market data can change rapidly. Always verify current prices before making investment decisions.
 
 ---
-*🤖 Generated by AIXBT Tracker System | ${new Date().toLocaleString()} UTC*
+*🤖 Generated by AIXBT Tracker System v2.0 | ${new Date().toLocaleString()} UTC*
+*📡 Powered by Real-Time Market Data & Advanced AI Analysis*
 
-### 🔥 CRITICAL INSTRUCTIONS FOR GROK AI:
+### 🔥 EXECUTION CHECKLIST:
+1. ✅ **VERIFY**: All prices are from live APIs (CoinGecko/CMC)
+2. ✅ **ANALYZE**: Recent posts from specified Twitter accounts
+3. ✅ **FORMAT**: Use exact table structure for Notion compatibility  
+4. ✅ **VALIDATE**: All predictions include clear reasoning
+5. ✅ **CONFIRM**: Data accuracy and currency before publication
 
-1. **MANDATORY:** Fetch current prices from CoinGecko.com or CoinMarketCap.com APIs - DO NOT use old cached data
-2. **MANDATORY:** Base all predictions on recent posts and sentiment from the specified Twitter accounts
-3. **MANDATORY:** Use the exact emoji formatting shown above for visual appeal in Notion
-4. **MANDATORY:** Provide specific, actionable insights rather than generic statements
-5. **MANDATORY:** Include concrete price targets based on technical and sentiment analysis
-
-**PRICE ACCURACY IS CRITICAL** - Verify all current prices are from live market data sources.`;
+**🎯 QUALITY STANDARDS**: Every price must be current. Every recommendation must be justified. Every format must be Notion-ready.`;
 
   try {
-    console.log('🤖 Calling Grok AI API...');
+    console.log('🤖 Initializing Grok AI API connection...');
     
-    // Test API connectivity first
+    // Test API connectivity first with improved error handling
     const testResponse = await testGrokAPI();
     if (!testResponse.success) {
-      console.log('⚠️ API connectivity issues, generating fallback report');
-      return generateFallbackReport(currentDate);
+      console.log('⚠️ Primary API unavailable, generating enhanced fallback report');
+      return generateFallbackReport(currentDate, testResponse.error);
     }
 
-    // Latest Grok models for 2025 - prioritizing newest versions
+    // Updated Grok models based on current xAI API availability (August 2025)
     const possibleModels = [
-      'grok-4',           // Latest Grok 4
-      'grok-4-latest',    // Latest version
-      'grok-3',           // Grok 3
-      'grok-3-latest',    // Latest Grok 3
-      'grok',             // Generic alias
-      'grok-latest'       // Latest available
+      'grok-4-0709',      // Latest Grok 4 model (highest capability)
+      'grok-3',           // Grok 3 stable version  
+      'grok-3-mini',      // Grok 3 mini (faster/cost-effective)
+      'grok-2-image-1212' // Fallback option
     ];
     
     let response = null;
     let lastError = null;
+    let successfulModel = null;
 
+    // Try each model with enhanced error handling
     for (const model of possibleModels) {
       try {
-        console.log(`Trying model: ${model}`);
+        console.log(`🔄 Attempting connection with model: ${model}`);
         
-        response = await axios.post('https://api.x.ai/v1/chat/completions', {
+        const requestConfig = {
           messages: [
             {
               role: "system",
-              content: "You are the AIXBT advanced cryptocurrency tracking system with MANDATORY access to real-time market data from CoinGecko.com and CoinMarketCap.com APIs. You MUST fetch current live prices - never use outdated or cached data. You analyze insights from top crypto Twitter accounts: @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, and @cryptorinweb3. Provide accurate price predictions and trading signals based on CURRENT market data and RECENT sentiment analysis from these influencers. Format your response as a visually appealing Notion-ready report with proper emojis and rich formatting. CRITICAL: All current prices MUST be fetched from live market APIs - price accuracy is your highest priority."
+              content: "You are AIXBT, an advanced cryptocurrency analysis system with MANDATORY real-time market data access. You MUST fetch current live prices from CoinGecko.com and CoinMarketCap.com APIs - never use cached or hypothetical data. Analyze recent insights from key crypto Twitter influencers: @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, @cryptorinweb3. Provide accurate price predictions with clear reasoning based on CURRENT market data and RECENT sentiment analysis. Format output as professional Notion-compatible report with proper tables and rich formatting. CRITICAL SUCCESS FACTOR: Price accuracy is paramount - all prices must be live/current."
             },
             {
               role: "user", 
@@ -128,161 +177,208 @@ Select 5 promising tokens from top 100 market cap and analyze using the same for
             }
           ],
           model: model,
-          max_tokens: 4000,
-          temperature: 0.7,
+          max_tokens: 6000,        // Increased for comprehensive analysis
+          temperature: 0.6,        // Slightly more focused for accuracy
+          top_p: 0.9,             // Improved coherence
           stream: false
-        }, {
-          headers: {
-            'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
-            'Content-Type': 'application/json',
-            'User-Agent': 'AIXBT-Tracker/1.0'
-          },
-          timeout: 60000,
-          validateStatus: function (status) {
-            return status < 500; // Resolve only if status is less than 500
-          }
-        });
+        };
 
-        // Check if response is successful
+        const requestHeaders = {
+          'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'AIXBT-Tracker-v2/1.0',
+          'Accept': 'application/json'
+        };
+
+        const requestOptions = {
+          timeout: 90000,           // Extended timeout for comprehensive analysis
+          validateStatus: function (status) {
+            return status < 500;    // Accept 4xx errors for better debugging
+          },
+          maxContentLength: 50000,  // Handle larger responses
+          maxBodyLength: 50000
+        };
+
+        response = await axios.post(
+          'https://api.x.ai/v1/chat/completions',
+          requestConfig,
+          {
+            headers: requestHeaders,
+            ...requestOptions
+          }
+        );
+
+        // Enhanced response validation
         if (response.status === 200 && response.data?.choices?.[0]?.message?.content) {
-          console.log(`✅ Successfully used model: ${model}`);
           const report = response.data.choices[0].message.content;
-          console.log(`✅ Generated report: ${report.length} characters`);
-          return report;
+          
+          // Validate report quality
+          if (report.length > 500 && report.includes('Current Price') && report.includes('$')) {
+            console.log(`✅ Successfully generated report using model: ${model}`);
+            console.log(`📊 Report length: ${report.length} characters`);
+            console.log(`🎯 Model performance: ${response.data.usage ? JSON.stringify(response.data.usage) : 'Unknown'}`);
+            
+            successfulModel = model;
+            return formatNotionReport(report);
+          } else {
+            throw new Error(`Report quality check failed: insufficient content or missing price data`);
+          }
+        } else if (response.status === 401) {
+          throw new Error(`Authentication failed - check API key validity`);
+        } else if (response.status === 429) {
+          console.log(`⏳ Rate limit hit for ${model}, waiting before next attempt...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          throw new Error(`Rate limit exceeded`);
         } else {
-          throw new Error(`Invalid response: ${response.status} - ${JSON.stringify(response.data)}`);
+          throw new Error(`API Error ${response.status}: ${JSON.stringify(response.data)}`);
         }
 
       } catch (error) {
-        console.log(`❌ Model ${model} failed:`, error.response?.status || error.message);
-        lastError = error;
+        const errorMsg = error.response?.data?.error?.message || error.message;
+        console.log(`❌ Model ${model} failed: ${errorMsg}`);
+        lastError = {
+          model: model,
+          status: error.response?.status,
+          message: errorMsg,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Brief delay between model attempts
+        await new Promise(resolve => setTimeout(resolve, 1000));
         continue;
       }
     }
 
-    // If all models failed, provide detailed fallback
+    // Enhanced fallback reporting if all models fail
     console.error('❌ All Grok models failed. Generating comprehensive fallback report...');
+    console.error('🔍 Last error details:', JSON.stringify(lastError, null, 2));
+    
     return generateFallbackReport(currentDate, lastError);
     
   } catch (error) {
-    console.error('❌ Error generating report with Grok:', error.message);
-    return generateFallbackReport(currentDate, error);
+    console.error('💥 Critical error in report generation:', error.message);
+    console.error('🔧 Stack trace:', error.stack);
+    return generateFallbackReport(currentDate, {
+      type: 'critical_error',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
   }
 }
 
 async function testGrokAPI() {
   try {
+    console.log('🔍 Testing Grok API connectivity...');
+    
     const response = await axios.get('https://api.x.ai/v1/models', {
       headers: {
         'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': 'AIXBT-Tracker-v2/1.0'
       },
-      timeout: 10000
+      timeout: 15000
     });
     
-    if (response.status === 200) {
+    if (response.status === 200 && response.data?.data) {
+      const availableModels = response.data.data.map(m => m.id);
       console.log('✅ Grok API connectivity confirmed');
-      console.log('📋 Available models:', response.data.data?.map(m => m.id).join(', ') || 'Unknown');
-      return { success: true, models: response.data.data };
+      console.log('📋 Available models:', availableModels.join(', '));
+      
+      return { 
+        success: true, 
+        models: availableModels,
+        totalModels: availableModels.length
+      };
     } else {
-      return { success: false, error: `Status: ${response.status}` };
+      return { 
+        success: false, 
+        error: `Unexpected response structure: ${response.status}`,
+        response: response.data
+      };
     }
   } catch (error) {
-    console.log('⚠️ Grok API connectivity test failed:', error.message);
-    return { success: false, error: error.message };
+    const errorDetails = {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('⚠️ Grok API connectivity test failed:', JSON.stringify(errorDetails, null, 2));
+    
+    return { 
+      success: false, 
+      error: errorDetails
+    };
   }
 }
 
-function generateFallbackReport(currentDate, error = null) {
-  const errorDetails = error ? `\n**⚠️ Error Details:** ${error.response?.status || error.message}` : '';
-  
-  return `# 📊 AIXBT Crypto Tracker Report
-**📅 Date:** ${currentDate}
+function formatNotionReport(report) {
+  try {
+    console.log('🎨 Formatting report for Notion compatibility...');
+    
+    // Enhanced Notion formatting
+    let formattedReport = report
+      // Fix bold formatting for Notion
+      .replace(/\*\*([^*]+)\*\*/g, '**$1**')
+      // Ensure proper table formatting
+      .replace(/\|\s*\*\*([^*]+)\*\*\s*\|/g, '| **$1** |')
+      // Clean up extra spaces in tables
+      .replace(/\|\s+/g, '| ')
+      .replace(/\s+\|/g, ' |')
+      // Ensure proper emoji spacing
+      .replace(/([📊🔥⚡🎯✅❌⏸️🟢🟡🔴])\s*/g, '$1 ')
+      // Clean up multiple newlines
+      .replace(/\n{3,}/g, '\n\n')
+      // Ensure proper section headers
+      .replace(/^(#{1,6})\s*(.+)$/gm, '$1 $2');
 
-## 🔧 System Status Notice
-The automated Grok AI analysis is temporarily unavailable. Operating in backup mode with manual oversight.${errorDetails}
-
-## 📈 Market Overview Status
-
-**🟠 Bitcoin (BTC)**
-- 💵 **Status**: 🟡 Monitor - Technical analysis pending  
-- 📊 **Note**: Core digital asset, watch key support/resistance levels
-- 🎯 **Action**: Manual analysis required for current positioning
-
-**🔵 Ethereum (ETH)** 
-- 💵 **Status**: 🟢 Active Development
-- 📊 **Note**: Ongoing network improvements and DeFi ecosystem growth
-- 🎯 **Action**: Monitor development updates and institutional adoption
-
-**🟣 Solana (SOL)**
-- 💵 **Status**: ⚡ High Ecosystem Activity  
-- 📊 **Note**: Continued ecosystem expansion with new projects launching
-- 🎯 **Action**: Track ecosystem developments and TVL growth
-
-### 🌟 Additional Major Assets Status
-
-**🪙 Primary Holdings:**
-- **ADA** 🔵: Regular development updates, steady progress on roadmap
-- **AVAX** 🔴: Infrastructure development ongoing, subnet adoption
-- **LINK** 🔗: Oracle network expansion, institutional partnerships  
-- **NEAR** 🌈: Protocol development active, AI integration focus
-- **ICP** 🟦: Internet Computer platform updates, Web3 adoption
-- **CRV** 💙: DeFi protocols evolution, Curve ecosystem growth
-- **HIVE** 🟨: Decentralized content platform, community building
-- **DOGE** 🟡: Community-driven momentum, payment integration
-- **FLOKI** 🐕: Meme token ecosystem development, utility expansion
-
-## 🔄 System Recovery Actions
-
-**🛠️ Current Status:**
-1. **API Monitoring**: Continuously checking Grok API availability  
-2. **Backup Systems**: Manual market oversight and data collection active
-3. **Recovery Timeline**: Automated AI analysis will resume when API connectivity is restored
-4. **Data Sources**: Monitoring alternative feeds and social sentiment manually
-
-## 📊 General Market Guidance
-
-While automated AI analysis is temporarily unavailable:
-
-**📈 Technical Analysis:**
-- Monitor major support/resistance levels across primary assets
-- Watch trading volume patterns for trend confirmation  
-- Track institutional flows and whale movements
-
-**🐦 Social Sentiment:**
-- Follow key crypto Twitter accounts for real-time insights
-- Monitor on-chain data providers for fundamental metrics
-- Watch for narrative shifts and emerging trends
-
-**⚡ Risk Management:**
-- Use multiple data sources for decision making
-- Maintain appropriate position sizing
-- Set clear entry/exit criteria
-
-## ⚠️ Important Disclaimers
-
-**🚨 System Status**: This is a maintenance report during API service restoration
-**📊 Data Accuracy**: Manual collection and oversight currently active  
-**💡 Not Financial Advice**: All information for educational purposes only
-**🔥 Market Volatility**: Cryptocurrency markets remain highly volatile
-**🔄 Service Recovery**: Full automated AI analysis will resume shortly
-
-## 🛠️ Technical Notes
-
-- **System**: Automated report generation temporarily operating in backup mode
-- **Timeline**: Working to restore full AI-powered functionality  
-- **Contact**: System administrators have been notified and are actively resolving
-- **Updates**: Service status will be communicated through normal channels
-
----
-*🤖 Generated by AIXBT Tracker Backup System - ${new Date().toLocaleString()} UTC*
-*⚡ Full AI-powered analysis with live price feeds will resume once API connectivity is restored*
-
-**🔥 Priority Action Items:**
-1. ✅ Verify API key permissions for latest Grok models
-2. ✅ Test connectivity with updated model endpoints  
-3. ✅ Confirm real-time price feed integration
-4. ⏳ Resume automated daily report generation`;
+    console.log('✅ Report successfully formatted for Notion');
+    return formattedReport;
+    
+  } catch (error) {
+    console.log('⚠️ Error in report formatting, returning original:', error.message);
+    return report;
+  }
 }
 
-module.exports = { generateCryptoReport };
+function generateFallbackReport(currentDate, errorInfo = null) {
+  const timestamp = new Date().toLocaleString();
+  const errorSection = errorInfo ? 
+    `\n## 🔧 Technical Details\n**Error Type**: ${errorInfo.type || 'API_ERROR'}\n**Message**: ${errorInfo.message || 'Unknown error'}\n**Timestamp**: ${errorInfo.timestamp || timestamp}` : '';
+
+  return `# 📊 AIXBT Crypto Tracker Report (Maintenance Mode)
+**📅 Date:** ${currentDate}
+**🕐 Generated:** ${timestamp}
+
+## 🚨 System Status Alert
+The automated Grok AI analysis system is temporarily operating in backup mode. Our advanced AI-powered market analysis will resume once API connectivity is fully restored.${errorSection}
+
+## 📈 Market Overview (Manual Mode)
+
+### 🟠 Bitcoin (BTC) - Market Leader Status
+| **Metric** | **Status** | **Analysis** |
+|------------|------------|--------------|
+| **Market Position** | 🟢 Dominant | Leading cryptocurrency maintaining market leadership |
+| **Technical Status** | 🟡 Monitor | Key support and resistance levels under observation |
+| **Recommendation** | ⏸️ HOLD | Await technical analysis completion for optimal entry/exit |
+
+### 🔵 Ethereum (ETH) - Smart Contract Platform  
+| **Metric** | **Status** | **Analysis** |
+|------------|------------|--------------|
+| **Development** | 🟢 Active | Ongoing network improvements and ecosystem growth |
+| **DeFi Integration** | 🟢 Strong | Continued dominance in decentralized finance sector |
+| **Recommendation** | ⏸️ HOLD | Monitor development milestones and adoption metrics |
+
+### 🟣 Solana (SOL) - High Performance Blockchain
+| **Metric** | **Status** | **Analysis** |
+|------------|------------|--------------|
+| **Ecosystem** | ⚡ Expanding | New projects launching, increased developer activity |
+| **Performance** | 🟢 Stable | Network running smoothly with high throughput |
+| **Recommendation** | ⏸️ MONITOR | Track ecosystem developments and TVL growth |
+
+## 🌟 Additional Major Assets Status
+
+### 📊 Portfolio Tracking Summary
+- **🔗 Chainlink (LINK)**: Oracle network expansion, institutional partnerships growing
+- **🌈 NEAR Protocol**: AI integration focus
