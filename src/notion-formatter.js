@@ -233,7 +233,7 @@ function parseMarkdownToNotionBlocks(markdown) {
       continue;
     }
 
-    // Handle table detection - convert to simple list format for Notion compatibility
+    // Handle table detection - create structured table-like format
     if (trimmedLine.includes('|') && !inTable) {
       inTable = true;
       tableRows = [trimmedLine];
@@ -242,22 +242,80 @@ function parseMarkdownToNotionBlocks(markdown) {
       tableRows.push(trimmedLine);
       continue;
     } else if (inTable && !trimmedLine.includes('|')) {
-      // End of table - convert to bulleted list
+      // End of table - convert to structured format
       inTable = false;
-      tableRows.forEach(row => {
-        if (row.trim() && !row.includes('---')) {
-          const cells = row.split('|').map(cell => cell.trim()).filter(cell => cell);
-          if (cells.length > 0) {
+      
+      if (tableRows.length > 0) {
+        // Process table rows
+        const processedRows = tableRows
+          .filter(row => row.trim() && !row.includes('---')) // Skip separator rows
+          .map(row => row.split('|').map(cell => cell.trim()).filter(cell => cell));
+        
+        if (processedRows.length > 0) {
+          // First row as header if it looks like one
+          const headerRow = processedRows[0];
+          const dataRows = processedRows.slice(1);
+          
+          // Add table header
+          if (headerRow.length > 0) {
             blocks.push({
               object: 'block',
               type: 'paragraph',
               paragraph: {
-                rich_text: [{ type: 'text', text: { content: cells.join(' • ') } }],
-              },
+                rich_text: [{
+                  type: 'text',
+                  text: { content: '📊 ' + headerRow.join(' | ') },
+                  annotations: { bold: true, color: 'blue' }
+                }]
+              }
+            });
+            
+            // Add separator
+            blocks.push({
+              object: 'block',
+              type: 'paragraph',
+              paragraph: {
+                rich_text: [{
+                  type: 'text',
+                  text: { content: '━'.repeat(Math.min(50, headerRow.join(' | ').length)) },
+                  annotations: { color: 'gray' }
+                }]
+              }
             });
           }
+          
+          // Add data rows as formatted paragraphs
+          dataRows.forEach(row => {
+            if (row.length > 0) {
+              const formattedRow = row.map((cell, index) => {
+                // Make first column bold (usually coin names)
+                return {
+                  type: 'text',
+                  text: { content: index === 0 ? `${cell} | ` : `${cell} | ` },
+                  annotations: index === 0 ? { bold: true } : {}
+                };
+              });
+              
+              blocks.push({
+                object: 'block',
+                type: 'paragraph',
+                paragraph: {
+                  rich_text: formattedRow
+                }
+              });
+            }
+          });
+          
+          // Add spacing after table
+          blocks.push({
+            object: 'block',
+            type: 'paragraph',
+            paragraph: {
+              rich_text: [{ type: 'text', text: { content: ' ' } }]
+            }
+          });
         }
-      });
+      }
       tableRows = [];
     }
 
@@ -417,22 +475,24 @@ function extractTextFromBlock(block) {
 }
 
 function parseInlineMarkdown(text) {
-  // Simple inline markdown parsing
+  // Enhanced inline markdown parsing for Notion
   const richText = [];
-  let currentText = text;
+  let currentIndex = 0;
   
-  // Handle **bold** text
-  const boldRegex = /\*\*(.*?)\*\*/g;
-  let lastIndex = 0;
+  // Handle **bold** text with proper regex
+  const boldRegex = /\*\*([^*]+)\*\*/g;
   let match;
   
   while ((match = boldRegex.exec(text)) !== null) {
     // Add text before bold
-    if (match.index > lastIndex) {
-      richText.push({
-        type: 'text',
-        text: { content: text.substring(lastIndex, match.index) }
-      });
+    if (match.index > currentIndex) {
+      const beforeText = text.substring(currentIndex, match.index);
+      if (beforeText.trim()) {
+        richText.push({
+          type: 'text',
+          text: { content: beforeText }
+        });
+      }
     }
     
     // Add bold text
@@ -442,15 +502,18 @@ function parseInlineMarkdown(text) {
       annotations: { bold: true }
     });
     
-    lastIndex = match.index + match[0].length;
+    currentIndex = match.index + match[0].length;
   }
   
   // Add remaining text
-  if (lastIndex < text.length) {
-    richText.push({
-      type: 'text',
-      text: { content: text.substring(lastIndex) }
-    });
+  if (currentIndex < text.length) {
+    const remainingText = text.substring(currentIndex);
+    if (remainingText.trim()) {
+      richText.push({
+        type: 'text',
+        text: { content: remainingText }
+      });
+    }
   }
   
   // If no formatting found, return simple text
