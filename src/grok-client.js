@@ -1,85 +1,115 @@
 const axios = require('axios');
 
-async function generateCryptoReport() {
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+// List of all cryptocurrencies the report will cover
+const COIN_LIST = [
+    'bitcoin', 'ethereum', 'solana', 'near-protocol', 'internet-computer', 
+    'curve-dao-token', 'hive', 'avalanche-2', 'chainlink', 'dogecoin', 
+    'floki', 'cardano', 'binancecoin', 'ripple', 'toncoin', 'polkadot', 'uniswap'
+];
 
-  // FINAL, MOST STRICT PROMPT to enforce format and content.
-  const prompt = `
-  CRITICAL INSTRUCTION: Generate a report in the EXACT format below. You MUST use real-time, live market data for all prices. The output MUST be a valid, Notion-compatible Markdown table.
+/**
+ * Fetches live price data from the CoinGecko API.
+ * This is the core function to ensure prices are always real-time.
+ */
+async function getLiveCoinData() {
+    console.log('Fetching live cryptocurrency prices from CoinGecko...');
+    try {
+        const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+            params: {
+                ids: COIN_LIST.join(','),
+                vs_currencies: 'usd',
+            }
+        });
+        console.log('Successfully fetched live price data.');
+        return response.data;
+    } catch (error) {
+        console.error('❌ Critical Error: Could not fetch live coin data from CoinGecko.', error.message);
+        // In case of failure, return null to trigger the fallback report.
+        return null;
+    }
+}
+
+/**
+ * Dynamically builds the Markdown table with live price data.
+ * @param {object} livePrices - The price data fetched from CoinGecko.
+ * @returns {string} A markdown string of the table rows.
+ */
+function buildPriceTable(livePrices) {
+    const symbols = {
+        'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL', 'near-protocol': 'NEAR', 
+        'internet-computer': 'ICP', 'curve-dao-token': 'CRV', 'hive': 'HIVE', 
+        'avalanche-2': 'AVAX', 'chainlink': 'LINK', 'dogecoin': 'DOGE', 'floki': 'FLOKI', 
+        'cardano': 'ADA', 'binancecoin': 'BNB', 'ripple': 'XRP', 'toncoin': 'TON', 
+        'polkadot': 'DOT', 'uniswap': 'UNI'
+    };
+    
+    let tableRows = '';
+    for (const coinId of COIN_LIST) {
+        const symbol = symbols[coinId];
+        const price = livePrices[coinId] ? `$${livePrices[coinId].usd.toLocaleString()}` : 'N/A';
+        // The AI will fill in the rest of the data based on the live price provided.
+        tableRows += `| ${symbol} | ${price} | [AI to predict] | [AI to recommend] | [AI to justify] | [AI to predict] | [AI to recommend] | [AI to justify] |\n`;
+    }
+    return tableRows;
+}
+
+
+async function generateCryptoReport() {
+    const currentDate = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    // --- STEP 1: FETCH REAL-TIME DATA ---
+    const livePrices = await getLiveCoinData();
+    if (!livePrices) {
+        // If fetching prices fails, we cannot proceed. Generate a fallback report.
+        return generateFallbackReport(currentDate, { message: 'Failed to fetch live price data from CoinGecko API.' });
+    }
+
+    // --- STEP 2: BUILD THE PROMPT WITH LIVE DATA ---
+    const mainPriceTable = buildPriceTable(livePrices);
+
+    const prompt = `
+  CRITICAL INSTRUCTION: You are AIXBT, a crypto analyst. I have provided you with a table containing the REAL-TIME, LIVE prices for several cryptocurrencies. Your task is to complete the table.
 
   **MANDATORY REQUIREMENTS:**
-  1.  **REAL-TIME DATA ONLY**: Fetch LIVE prices from CoinGecko.com or CoinMarketCap.com APIs. Do NOT use cached or hypothetical data.
-  2.  **EXACT TABLE FORMAT**: The entire cryptocurrency analysis section MUST be a single, valid Markdown table.
-  3.  **TWO SECTIONS REQUIRED**: The report must contain the main analysis table AND the "High-Potential Tokens" table.
-  4.  **JUSTIFICATION REQUIRED**: Every recommendation must have a concise justification based on RECENT (last 24 hours) data.
+  1.  **USE PROVIDED PRICES**: You MUST use the "Current Price" data I have provided in the table. Do NOT change it.
+  2.  **COMPLETE THE TABLE**: Fill in the missing columns: "30D Predicted", "ST Action", "ST Justification", "6M Predicted", "LT Action", and "LT Justification".
+  3.  **STAY IN FORMAT**: Your entire response must be ONLY the completed Markdown table and the "Related Insights" section. Do not add any extra text or conversation.
 
   **REPORT STRUCTURE:**
 
   # 📊 AIXBT Tracker Report
   **📅 Date:** ${currentDate}
-  **📡 Data Source**: Real-time prices fetched from CoinGecko.com & CoinMarketCap.com APIs.
+  **📡 Data Source**: Real-time prices fetched from CoinGecko.com.
 
   ## 📈 Cryptocurrency Analysis
 
   | Coin | Current Price | 30D Predicted | ST Action | ST Justification | 6M Predicted | LT Action | LT Justification |
   |---|---|---|---|---|---|---|---|
-  | BTC | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | ETH | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | SOL | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | NEAR | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | ICP | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | CRV | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | HIVE | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | AVAX | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | LINK | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | DOGE | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | FLOKI | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
-  | ADA | $[LIVE PRICE] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on recent data] | $[Target Price] | [✅ Buy / ❌ Sell / ⏸️ Hold] | [Concise reason based on fundamentals] |
+  ${mainPriceTable}
 
   ## 🌟 High-Potential Tokens (Top 5)
-  *Select 5 promising tokens from the top 100 market cap (excluding those above) and analyze them using the exact same table format.*
-
-  | Coin | Current Price | 30D Predicted | ST Action | ST Justification | 6M Predicted | LT Action | LT Justification |
-  |---|---|---|---|---|---|---|---|
-  | [Token 1] | $[LIVE PRICE] | $[Target] | [Action] | [Reason] | $[Target] | [Action] | [Reason] |
-  | [Token 2] | $[LIVE PRICE] | $[Target] | [Action] | [Reason] | $[Target] | [Action] | [Reason] |
-  | [Token 3] | $[LIVE PRICE] | $[Target] | [Action] | [Reason] | $[Target] | [Action] | [Reason] |
-  | [Token 4] | $[LIVE PRICE] | $[Target] | [Action] | [Reason] | $[Target] | [Action] | [Reason] |
-  | [Token 5] | $[LIVE PRICE] | $[Target] | [Action] | [Reason] | $[Target] | [Action] | [Reason] |
+  *From the list above, select the 5 you believe have the highest potential and summarize why.*
 
   ## 🔍 Related Insights (from tracked accounts)
   - **BTC**: [Brief summary of recent whale moves or key influencer targets.]
   - **ETH**: [Brief summary of recent staking data or key influencer targets.]
   - **SOL**: [Brief summary of recent ecosystem news or key influencer targets.]
-  - **Others**: [Brief summary of notable events for any other coins in the list.]
 
   ## 🚨 Legal Disclaimers
   **⚠️ IMPORTANT NOTICE**: This report is for EDUCATIONAL PURPOSES ONLY. All prices are time-sensitive.
-  **🔥 Risk Warning**: Cryptocurrency markets are volatile. Always conduct your own research (DYOR).
+  **🔥 Risk Warning**: Cryptocurrency markets are volatile. DYOR.
   ---
   *🤖 Generated by AIXBT Tracker System v2.0*`;
 
   try {
-    console.log('🤖 Initializing Grok AI API connection with final, strict prompt...');
+    console.log('🤖 Initializing Grok AI API connection with live price data...');
     
-    const testResponse = await testGrokAPI();
-    if (!testResponse.success) {
-      console.log('⚠️ Primary API unavailable, generating fallback report');
-      return generateFallbackReport(currentDate, testResponse.error);
-    }
-
-    const possibleModels = [
-      'grok-3-mini',
-      'grok-4-0709',
-      'grok-3',
-      'grok-2-image-1212'
-    ];
-    
+    const possibleModels = ['grok-3-mini', 'grok-4-0709']; // Prioritize faster, cheaper model
     let response = null;
     let lastError = null;
 
@@ -88,99 +118,53 @@ async function generateCryptoReport() {
         console.log(`🔄 Attempting connection with model: ${model}`);
         
         const requestConfig = {
-          messages: [
-            {
-              role: "system",
-              content: "You are AIXBT, a cryptocurrency analysis bot. You MUST follow user instructions for formatting and data sourcing precisely. Your primary directive is to use REAL-TIME data and adhere to the requested structure without deviation. The output must be a valid markdown table."
-            },
-            {
-              role: "user", 
-              content: prompt
-            }
-          ],
+          messages: [{ role: "user", content: prompt }],
           model: model,
-          max_tokens: 8000, // Increased max_tokens to accommodate the larger report
-          temperature: 0.5,
-          top_p: 0.9,
-          stream: false
+          max_tokens: 8000,
+          temperature: 0.5
         };
 
         const requestHeaders = {
           'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
-          'Content-Type': 'application/json',
-          'User-Agent': 'AIXBT-Tracker-v2/1.0',
-        };
-
-        const requestOptions = {
-          timeout: 120000, // Increased timeout for the larger request
-          validateStatus: (status) => status < 500,
+          'Content-Type': 'application/json'
         };
 
         response = await axios.post(
           'https://api.x.ai/v1/chat/completions',
           requestConfig,
-          { headers: requestHeaders, ...requestOptions }
+          { headers: requestHeaders, timeout: 120000 }
         );
 
         if (response.status === 200 && response.data?.choices?.[0]?.message?.content) {
           const report = response.data.choices[0].message.content;
-          
-          if (report.includes('| Current Price |') && report.includes('High-Potential Tokens')) {
+          if (report.includes('| Current Price |')) {
             console.log(`✅ Successfully generated report using model: ${model}`);
             return formatNotionReport(report);
           } else {
-            throw new Error(`Report quality check failed: Incorrect format or missing required sections.`);
+            throw new Error(`Report quality check failed: Incorrect format.`);
           }
         } else {
           throw new Error(`API Error ${response.status}: ${JSON.stringify(response.data)}`);
         }
-
       } catch (error) {
         const errorMsg = error.response?.data?.error?.message || error.message;
         console.log(`❌ Model ${model} failed: ${errorMsg}`);
-        lastError = { model, status: error.response?.status, message: errorMsg };
+        lastError = { model, message: errorMsg };
         await new Promise(resolve => setTimeout(resolve, 1000));
         continue;
       }
     }
-
     console.error('❌ All Grok models failed. Generating fallback report.');
-    console.error('🔍 Last error details:', JSON.stringify(lastError, null, 2));
     return generateFallbackReport(currentDate, lastError);
-    
   } catch (error) {
     console.error('💥 Critical error in report generation:', error.message);
-    return generateFallbackReport(currentDate, { type: 'critical_error', message: error.message });
-  }
-}
-
-async function testGrokAPI() {
-  try {
-    console.log('🔍 Testing Grok API connectivity...');
-    const response = await axios.get('https://api.x.ai/v1/models', {
-      headers: { 'Authorization': `Bearer ${process.env.GROK_API_KEY}` },
-      timeout: 15000
-    });
-    if (response.status === 200 && response.data?.data) {
-      console.log('✅ Grok API connectivity confirmed.');
-      return { success: true };
-    }
-    return { success: false, error: `Unexpected response: ${response.status}` };
-  } catch (error) {
-    const errorDetails = {
-      message: error.message,
-      status: error.response?.status,
-    };
-    console.log('⚠️ Grok API connectivity test failed:', JSON.stringify(errorDetails, null, 2));
-    return { success: false, error: errorDetails };
+    return generateFallbackReport(currentDate, { message: error.message });
   }
 }
 
 function formatNotionReport(report) {
-    console.log('🎨 Formatting report for Notion compatibility...');
     const reportStartIndex = report.indexOf('# 📊 AIXBT Tracker Report');
     if (reportStartIndex > 0) {
-        console.log('Trimming conversational text from the beginning of the report.');
         report = report.substring(reportStartIndex);
     }
     return report;
@@ -188,20 +172,14 @@ function formatNotionReport(report) {
 
 function generateFallbackReport(currentDate, errorInfo = null) {
   const timestamp = new Date().toLocaleString();
-  const errorSection = errorInfo ? 
-    `\n## 🔧 Technical Details\n**Error Message**: ${errorInfo.message || 'Unknown error'}` : '';
-
+  const errorSection = errorInfo ? `\n**Error Message**: ${errorInfo.message || 'Unknown error'}` : '';
   return `# 🚨 AIXBT Crypto Tracker - API Alert
 **📅 Date:** ${currentDate}
 **🕐 Time:** ${timestamp}
-
 ## 📉 System Status: OFFLINE
-
-The Grok AI API is currently down and the daily crypto report could not be generated.
-
-**Action Required:** A developer needs to be notified to manually restart the bot and investigate the issue.
+The daily crypto report could not be generated.
+**Action Required:** A developer needs to investigate the issue.
 ${errorSection}
-
 ---
 *🤖 This is an automated alert from the AIXBT Backup System.*`;
 }
