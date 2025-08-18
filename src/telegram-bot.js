@@ -2,9 +2,11 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 
+// Telegram's official character limit for a photo caption
+const TELEGRAM_CAPTION_LIMIT = 1024;
+
 /**
  * Escapes special characters in a string for Telegram's Markdown parser.
- * This prevents formatting errors when the text contains characters like '*' or '_'.
  * @param {string} text The text to sanitize.
  * @returns {string} The sanitized text.
  */
@@ -12,7 +14,6 @@ function escapeMarkdown(text) {
   if (!text) {
     return '';
   }
-  // For the legacy 'Markdown' parse mode, we primarily need to escape these characters.
   const charsToEscape = /([_*`\[])/g;
   return text.replace(charsToEscape, '\\$1');
 }
@@ -30,12 +31,38 @@ async function sendToTelegram(screenshot, highlights, notionUrl) {
       day: 'numeric'
     });
     
-    // Sanitize the highlights content to prevent Markdown parsing errors
+    const header = `🎯 *AIXBT Crypto Tracker - ${currentDate}*\n\n`;
+    const footer = `\n\n📊 [View Complete Trading Analysis](${notionUrl})\n\n🤖 _Automated AIXBT tracking system_`;
+    
+    // Defensive check: If header and footer alone are too long, send a minimal caption.
+    if (header.length + footer.length >= TELEGRAM_CAPTION_LIMIT) {
+      console.error('❌ Caption is too long due to header/footer length. Sending minimal fallback caption.');
+      const minimalCaption = `🎯 *AIXBT Report - ${currentDate}*\n\n[View Full Report](${notionUrl})\n\n(The summary was too long to display)`;
+      await bot.sendPhoto(chatId, screenshot, {
+          caption: minimalCaption,
+          parse_mode: 'Markdown'
+      });
+      console.log('✅ Fallback report sent to Telegram successfully.');
+      return; // Stop execution to prevent errors
+    }
+    
+    // Sanitize the highlights content
     const sanitizedHighlights = escapeMarkdown(highlights);
+    let finalHighlights = sanitizedHighlights;
     
-    const caption = `🎯 *AIXBT Crypto Tracker - ${currentDate}*\n\n${sanitizedHighlights}\n\n📊 [View Complete Trading Analysis](${notionUrl})\n\n🤖 _Automated AIXBT tracking system_`;
+    // Calculate the exact available length for highlights
+    const availableLength = TELEGRAM_CAPTION_LIMIT - header.length - footer.length;
     
-    // Send screenshot with caption
+    // Truncate the highlights if they exceed the available space
+    if (finalHighlights.length > availableLength) {
+      console.log('⚠️ Highlights text is too long, truncating for Telegram...');
+      // The ellipsis "..." adds 3 characters.
+      finalHighlights = finalHighlights.substring(0, availableLength - 3) + '...';
+    }
+    
+    const caption = header + finalHighlights + footer;
+    
+    // Send screenshot with the correctly sized caption
     await bot.sendPhoto(chatId, screenshot, {
       caption: caption,
       parse_mode: 'Markdown',
