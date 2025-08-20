@@ -1,10 +1,11 @@
 const axios = require('axios');
 
 // List of all cryptocurrencies the report will cover
+// CORRECTED: Updated CoinGecko IDs for NEAR, TON, and XRP to ensure accurate data fetching.
 const COIN_LIST = [
-    'bitcoin', 'ethereum', 'solana', 'near-protocol', 'internet-computer', 
+    'bitcoin', 'ethereum', 'solana', 'near', 'internet-computer', 
     'curve-dao-token', 'hive', 'avalanche-2', 'chainlink', 'dogecoin', 
-    'floki', 'cardano', 'binancecoin', 'ripple', 'toncoin', 'polkadot', 'uniswap'
+    'floki', 'cardano', 'binancecoin', 'xrp', 'the-open-network', 'polkadot', 'uniswap'
 ];
 
 /**
@@ -35,18 +36,37 @@ async function getLiveCoinData() {
  * @returns {string} A markdown string of the table rows.
  */
 function buildPriceTable(livePrices) {
+    // Map of coin IDs to their symbols for the report table.
     const symbols = {
-        'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL', 'near-protocol': 'NEAR', 
+        'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL', 'near': 'NEAR', 
         'internet-computer': 'ICP', 'curve-dao-token': 'CRV', 'hive': 'HIVE', 
         'avalanche-2': 'AVAX', 'chainlink': 'LINK', 'dogecoin': 'DOGE', 'floki': 'FLOKI', 
-        'cardano': 'ADA', 'binancecoin': 'BNB', 'ripple': 'XRP', 'toncoin': 'TON', 
+        'cardano': 'ADA', 'binancecoin': 'BNB', 'xrp': 'XRP', 'the-open-network': 'TON', 
         'polkadot': 'DOT', 'uniswap': 'UNI'
     };
     
     let tableRows = '';
     for (const coinId of COIN_LIST) {
         const symbol = symbols[coinId];
-        const price = livePrices[coinId] ? `$${livePrices[coinId].usd.toLocaleString()}` : 'N/A';
+        
+        // FIXED: Implemented robust price formatting to handle very low-value coins (like Floki)
+        // and prevent them from appearing as $0. It now shows more decimal places for prices below $0.01.
+        const priceData = livePrices[coinId];
+        let price;
+        if (priceData && typeof priceData.usd === 'number') {
+            const usdValue = priceData.usd;
+            // Use more precision for numbers smaller than $0.01, otherwise use standard 2 decimal places.
+            const options = {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: usdValue < 0.01 ? 8 : 2,
+            };
+            price = new Intl.NumberFormat('en-US', options).format(usdValue);
+        } else {
+            price = 'N/A'; // Fallback for missing data
+        }
+
         // The AI will fill in the rest of the data based on the live price provided.
         tableRows += `| ${symbol} | ${price} | [AI to predict] | [AI to recommend] | [AI to justify] | [AI to predict] | [AI to recommend] | [AI to justify] |\n`;
     }
@@ -72,6 +92,7 @@ async function generateCryptoReport() {
     // --- STEP 2: BUILD THE PROMPT WITH LIVE DATA ---
     const mainPriceTable = buildPriceTable(livePrices);
 
+    // ADDED: Enhanced the prompt to ask for specific insights on more coins, including the ones that were fixed.
     const prompt = `
   CRITICAL INSTRUCTION: You are AIXBT, a crypto analyst. I have provided you with a table containing the REAL-TIME, LIVE prices for several cryptocurrencies. Your task is to complete the table.
 
@@ -99,6 +120,9 @@ async function generateCryptoReport() {
   - **BTC**: [Brief summary of recent whale moves or key influencer targets.]
   - **ETH**: [Brief summary of recent staking data or key influencer targets.]
   - **SOL**: [Brief summary of recent ecosystem news or key influencer targets.]
+  - **NEAR**: [Brief summary of sharding developments or key influencer targets.]
+  - **TON**: [Brief summary of Telegram integration news or key influencer targets.]
+  - **XRP**: [Brief summary of legal case developments or partnership news.]
 
   ## 🚨 Legal Disclaimers
   **⚠️ IMPORTANT NOTICE**: This report is for EDUCATIONAL PURPOSES ONLY. All prices are time-sensitive.
