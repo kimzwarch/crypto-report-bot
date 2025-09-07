@@ -84,18 +84,18 @@ async function generateCryptoReport() {
     const mainPriceTable = buildPriceTable(livePrices);
 
     const prompt = `
-  CRITICAL INSTRUCTION: You are AIXBT, a crypto analyst. Your task is to generate a daily crypto market report focusing on key real-time metrics and individual coin analysis, incorporating insights from specified Twitter accounts and open-source data.
+  You are AIXBT, a crypto analyst. Generate a daily crypto market report.
 
-  **MANDATORY REQUIREMENTS:**
-  1.  **FETCH CURRENT DATA**: Use your real-time data access to fetch the most current data for each metric in the "Key Market Metrics" table. You can refer to open-source data from CoinMarketCap, CoinGecko, and DefiLlama.
-  2.  **USE PROVIDED PRICES**: You MUST use the "Current Price" data I have provided in the "Cryptocurrency Analysis" table. Do NOT change it.
-  3.  **COMPLETE BOTH TABLES**: Fill in all missing columns in both tables.
-  4.  **STAY IN FORMAT**: Your entire response must be ONLY the completed Markdown tables and the "Overall Summary" and "Related Posts" sections. Do not add any extra text or conversation.
-  5.  **PROVIDE FACTUAL JUSTIFICATION**: The "Justification" columns must be a brief, objective explanation based on market context, historical trends, or contributing factors. **Incorporate insights from the Twitter accounts listed in the "Related Posts" section where relevant, but do not exclusively rely on them.**
-  6.  **SUGGEST IMPLICATION**: The "Implication" column should be a "Buy", "Sell", or "Hold" signal with a short rationale. This is not financial advice.
-  7.  **ADD SUMMARY**: After the tables, add a short "Overall Summary" paragraph synthesizing the signals for a retail investor with a DCA strategy and moderate risk appetite.
+  **MANDATORY INSTRUCTIONS:**
+  1.  **USE REAL-TIME DATA**: Fetch current data for the "Key Market Metrics" table. Use open-source data from CoinMarketCap, CoinGecko, and DefiLlama.
+  2.  **USE PROVIDED PRICES**: For the "Cryptocurrency Analysis" table, you MUST use the "Current Price" data provided. Do not change it.
+  3.  **COMPLETE ALL TABLES**: Fill in all missing columns in both tables.
+  4.  **STRICT FORMAT**: Your entire response MUST be ONLY the completed Markdown tables, "Overall Summary", and "Related Posts" sections. No extra text or conversation.
+  5.  **JUSTIFY YOUR ANALYSIS**: "Justification" columns must be brief, objective explanations based on market context, historical trends, or contributing factors. Incorporate insights from the specified Twitter accounts but do not rely on them exclusively.
+  6.  **PROVIDE SIGNALS**: The "Implication" and "Action" columns should be "Buy", "Sell", or "Hold" with a short rationale. This is not financial advice.
+  7.  **SUMMARIZE**: Write a short "Overall Summary" for a retail investor with a DCA strategy and moderate risk appetite.
   8.  **SUMMARIZE POSTS**: In the "Related Posts from Tracked Accounts" section, summarize recent relevant posts from the specified accounts for each cryptocurrency.
-  9.  **CITE SOURCES**: Where possible, cite your data sources inline.
+  9.  **CITE SOURCES**: Cite data sources inline where possible.
 
   **REPORT STRUCTURE:**
 
@@ -179,6 +179,8 @@ async function generateCryptoReport() {
             console.log(`✅ Successfully generated report using model: ${model}`);
             return formatNotionReport(report);
           } else {
+            console.error('Report quality check failed: Incorrect format.');
+            console.error('Received report:', report);
             throw new Error(`Report quality check failed: Incorrect format.`);
           }
         } else {
