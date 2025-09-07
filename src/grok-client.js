@@ -1,16 +1,14 @@
 const axios = require('axios');
 
 // List of all cryptocurrencies the report will cover
-// CORRECTED: Updated CoinGecko IDs for NEAR, TON, and XRP to ensure accurate data fetching.
 const COIN_LIST = [
-    'bitcoin', 'ethereum', 'solana', 'near', 'internet-computer', 
-    'curve-dao-token', 'hive', 'avalanche-2', 'chainlink', 'dogecoin', 
+    'bitcoin', 'ethereum', 'solana', 'near', 'internet-computer',
+    'curve-dao-token', 'hive', 'avalanche-2', 'chainlink', 'dogecoin',
     'floki', 'cardano', 'binancecoin', 'xrp', 'the-open-network', 'polkadot', 'uniswap'
 ];
 
 /**
  * Fetches live price data from the CoinGecko API.
- * This is the core function to ensure prices are always real-time.
  */
 async function getLiveCoinData() {
     console.log('Fetching live cryptocurrency prices from CoinGecko...');
@@ -25,7 +23,6 @@ async function getLiveCoinData() {
         return response.data;
     } catch (error) {
         console.error('❌ Critical Error: Could not fetch live coin data from CoinGecko.', error.message);
-        // In case of failure, return null to trigger the fallback report.
         return null;
     }
 }
@@ -36,26 +33,22 @@ async function getLiveCoinData() {
  * @returns {string} A markdown string of the table rows.
  */
 function buildPriceTable(livePrices) {
-    // Map of coin IDs to their symbols for the report table.
     const symbols = {
-        'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL', 'near': 'NEAR', 
-        'internet-computer': 'ICP', 'curve-dao-token': 'CRV', 'hive': 'HIVE', 
-        'avalanche-2': 'AVAX', 'chainlink': 'LINK', 'dogecoin': 'DOGE', 'floki': 'FLOKI', 
-        'cardano': 'ADA', 'binancecoin': 'BNB', 'xrp': 'XRP', 'the-open-network': 'TON', 
+        'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL', 'near': 'NEAR',
+        'internet-computer': 'ICP', 'curve-dao-token': 'CRV', 'hive': 'HIVE',
+        'avalanche-2': 'AVAX', 'chainlink': 'LINK', 'dogecoin': 'DOGE', 'floki': 'FLOKI',
+        'cardano': 'ADA', 'binancecoin': 'BNB', 'xrp': 'XRP', 'the-open-network': 'TON',
         'polkadot': 'DOT', 'uniswap': 'UNI'
     };
-    
+
     let tableRows = '';
     for (const coinId of COIN_LIST) {
         const symbol = symbols[coinId];
-        
-        // FIXED: Implemented robust price formatting to handle very low-value coins (like Floki)
-        // and prevent them from appearing as $0. It now shows more decimal places for prices below $0.01.
+
         const priceData = livePrices[coinId];
         let price;
         if (priceData && typeof priceData.usd === 'number') {
             const usdValue = priceData.usd;
-            // Use more precision for numbers smaller than $0.01, otherwise use standard 2 decimal places.
             const options = {
                 style: 'currency',
                 currency: 'USD',
@@ -64,10 +57,9 @@ function buildPriceTable(livePrices) {
             };
             price = new Intl.NumberFormat('en-US', options).format(usdValue);
         } else {
-            price = 'N/A'; // Fallback for missing data
+            price = 'N/A';
         }
 
-        // The AI will fill in the rest of the data based on the live price provided.
         tableRows += `| ${symbol} | ${price} | [AI to predict] | [AI to recommend] | [AI to justify] | [AI to predict] | [AI to recommend] | [AI to justify] |\n`;
     }
     return tableRows;
@@ -85,27 +77,49 @@ async function generateCryptoReport() {
     // --- STEP 1: FETCH REAL-TIME DATA ---
     const livePrices = await getLiveCoinData();
     if (!livePrices) {
-        // If fetching prices fails, we cannot proceed. Generate a fallback report.
         return generateFallbackReport(currentDate, { message: 'Failed to fetch live price data from CoinGecko API.' });
     }
 
     // --- STEP 2: BUILD THE PROMPT WITH LIVE DATA ---
     const mainPriceTable = buildPriceTable(livePrices);
 
-    // ADDED: Enhanced the prompt to ask for specific insights on more coins, including the ones that were fixed.
     const prompt = `
-  CRITICAL INSTRUCTION: You are AIXBT, a crypto analyst. I have provided you with a table containing the REAL-TIME, LIVE prices for several cryptocurrencies. Your task is to complete the table.
+  CRITICAL INSTRUCTION: You are AIXBT, a crypto analyst. Your task is to generate a daily crypto market report focusing on key real-time metrics and individual coin analysis, incorporating insights from specified Twitter accounts and open-source data.
 
   **MANDATORY REQUIREMENTS:**
-  1.  **USE PROVIDED PRICES**: You MUST use the "Current Price" data I have provided in the table. Do NOT change it.
-  2.  **COMPLETE THE TABLE**: Fill in the missing columns: "30D Predicted", "ST Action", "ST Justification", "6M Predicted", "LT Action", and "LT Justification".
-  3.  **STAY IN FORMAT**: Your entire response must be ONLY the completed Markdown table and the "Related Insights" section. Do not add any extra text or conversation.
+  1.  **FETCH CURRENT DATA**: Use your real-time data access to fetch the most current data for each metric in the "Key Market Metrics" table. You can refer to open-source data from CoinMarketCap, CoinGecko, and DefiLlama.
+  2.  **USE PROVIDED PRICES**: You MUST use the "Current Price" data I have provided in the "Cryptocurrency Analysis" table. Do NOT change it.
+  3.  **COMPLETE BOTH TABLES**: Fill in all missing columns in both tables.
+  4.  **STAY IN FORMAT**: Your entire response must be ONLY the completed Markdown tables and the "Overall Summary" and "Related Posts" sections. Do not add any extra text or conversation.
+  5.  **PROVIDE FACTUAL JUSTIFICATION**: The "Justification" columns must be a brief, objective explanation based on market context, historical trends, or contributing factors. **Incorporate insights from the Twitter accounts listed in the "Related Posts" section where relevant, but do not exclusively rely on them.**
+  6.  **SUGGEST IMPLICATION**: The "Implication" column should be a "Buy", "Sell", or "Hold" signal with a short rationale. This is not financial advice.
+  7.  **ADD SUMMARY**: After the tables, add a short "Overall Summary" paragraph synthesizing the signals for a retail investor with a DCA strategy and moderate risk appetite.
+  8.  **SUMMARIZE POSTS**: In the "Related Posts from Tracked Accounts" section, summarize recent relevant posts from the specified accounts for each cryptocurrency.
+  9.  **CITE SOURCES**: Where possible, cite your data sources inline.
 
   **REPORT STRUCTURE:**
 
   # 📊 AIXBT Tracker Report
   **📅 Date:** ${currentDate}
-  **📡 Data Source**: Real-time prices fetched from CoinGecko.com.
+  **📡 Data Source**: Real-time prices fetched from CoinGecko.com. Additional data from CoinMarketCap, DefiLlama, and X.
+
+  ## 📈 Key Market Metrics
+
+  | Metric | Figure | Changes | Justification | Implication |
+  |---|---|---|---|---|
+  | Bitcoin Dominance (BTCD) | [Fetch Current %] | [Fetch 24h/7d % Change] | [Explain why BTCD is at this level] | [Hold/Buy/Sell Signal + Rationale] |
+  | Fear & Greed Index | [Fetch Current Value/Sentiment] | [Fetch 24h Change] | [Explain the current sentiment level] | [Hold/Buy/Sell Signal + Rationale] |
+  | Social Volume (BTC & ETH) | [Fetch Descriptive Summary] | [Fetch 24h/7d Trend] | [Explain the social volume trend] | [Hold/Buy/Sell Signal + Rationale] |
+  | Social Sentiment (BTC & ETH) | [Fetch Descriptive Summary] | [Fetch 24h/7d Trend] | [Explain the social sentiment trend] | [Hold/Buy/Sell Signal + Rationale] |
+  | DeFi TVL | [Fetch Current $ Value] | [Fetch 24h/7d % Change] | [Explain the TVL change] | [Hold/Buy/Sell Signal + Rationale] |
+  | Stablecoins Market Cap | [Fetch Current $ Value] | [Fetch 24h/7d % Change] | [Explain the market cap change] | [Hold/Buy/Sell Signal + Rationale] |
+  | DEX Volumes | [Fetch Current $ Value] | [Fetch 24h/7d % Change] | [Explain the volume change] | [Hold/Buy/Sell Signal + Rationale] |
+  | Fees Paid in DeFi | [Fetch Current $ Value] | [Fetch 24h/7d % Change] | [Explain the fee changes] | [Hold/Buy/Sell Signal + Rationale] |
+  | Perps Volume | [Fetch Current $ Value] | [Fetch 24h/7d % Change] | [Explain the volume change] | [Hold/Buy/Sell Signal + Rationale] |
+  | Upcoming Unlocks | [List top 3-5 upcoming unlocks] | [N/A] | [Explain the potential impact] | [Hold/Sell Signal + Rationale] |
+  | ETF Inflows | [Fetch Net Inflow/Outflow] | [Fetch Previous Day's Flow] | [Explain the flow trend] | [Hold/Buy/Sell Signal + Rationale] |
+  | RWA TVL | [Fetch Current $ Value] | [Fetch 7d/30d % Change] | [Explain the RWA TVL trend] | [Hold/Buy Signal + Rationale] |
+  | Bridged Volume | [Fetch Current $ Value] | [Fetch 7d/30d % Change] | [Explain the bridged volume trend] | [Hold/Buy Signal + Rationale] |
 
   ## 📈 Cryptocurrency Analysis
 
@@ -113,16 +127,16 @@ async function generateCryptoReport() {
   |---|---|---|---|---|---|---|---|
   ${mainPriceTable}
 
-  ## 🌟 High-Potential Tokens (Top 5)
-  *From the list above, select the 5 you believe have the highest potential and summarize why.*
+  ## 📝 Overall Summary
+  [Synthesize the signals from both tables into a balanced daily outlook for a retail investor with a DCA strategy and moderate risk appetite.]
 
-  ## 🔍 Related Insights (from tracked accounts)
-  - **BTC**: [Brief summary of recent whale moves or key influencer targets.]
-  - **ETH**: [Brief summary of recent staking data or key influencer targets.]
-  - **SOL**: [Brief summary of recent ecosystem news or key influencer targets.]
-  - **NEAR**: [Brief summary of sharding developments or key influencer targets.]
-  - **TON**: [Brief summary of Telegram integration news or key influencer targets.]
-  - **XRP**: [Brief summary of legal case developments or partnership news.]
+  ## 🔍 Related Posts from Tracked Accounts
+  *Summarize recent posts from the following Twitter accounts related to each cryptocurrency, providing context for predictions and suggestions: @aixbt_agent, @OnchainDataNerd, @ASvanevik, @DefiIgnas, @simononchain, @zachxbt, @lookonchain, @WuBlockchain, @0xngmi, @CryptoHayes, @CryptoKaleo, @Pentosh1, @stacy_muur, @MikybullCrypto, @CryptoGirlNova, @0xbeinginvested, @ChainROI, @100xDarren, @Chyan, @cryptorinweb3*
+
+  - **BTC**: [Brief summary of recent posts]
+  - **ETH**: [Brief summary of recent posts]
+  - **SOL**: [Brief summary of recent posts]
+  - **... (and so on for other relevant coins)**
 
   ## 🚨 Legal Disclaimers
   **⚠️ IMPORTANT NOTICE**: This report is for EDUCATIONAL PURPOSES ONLY. All prices are time-sensitive.
@@ -132,15 +146,15 @@ async function generateCryptoReport() {
 
   try {
     console.log('🤖 Initializing Grok AI API connection with live price data...');
-    
-    const possibleModels = ['grok-3-mini', 'grok-4-0709']; // Prioritize faster, cheaper model
+
+    const possibleModels = ['grok-3-mini', 'grok-4-0709'];
     let response = null;
     let lastError = null;
 
     for (const model of possibleModels) {
       try {
         console.log(`🔄 Attempting connection with model: ${model}`);
-        
+
         const requestConfig = {
           messages: [{ role: "user", content: prompt }],
           model: model,
@@ -156,12 +170,12 @@ async function generateCryptoReport() {
         response = await axios.post(
           'https://api.x.ai/v1/chat/completions',
           requestConfig,
-          { headers: requestHeaders, timeout: 120000 }
+          { headers: requestHeaders, timeout: 180000 }
         );
 
         if (response.status === 200 && response.data?.choices?.[0]?.message?.content) {
           const report = response.data.choices[0].message.content;
-          if (report.includes('| Current Price |')) {
+          if (report.includes('| Metric | Figure |') && report.includes('| Coin | Current Price |')) {
             console.log(`✅ Successfully generated report using model: ${model}`);
             return formatNotionReport(report);
           } else {
