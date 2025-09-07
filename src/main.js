@@ -46,6 +46,11 @@ async function runDailyReport() {
 
 function extractHighlights(report) {
   try {
+    // If the report generation failed, the report will contain the "API Alert" header.
+    if (report.includes('# 🚨 AIXBT Crypto Tracker - API Alert')) {
+      return 'The daily crypto report could not be generated due to an API error.';
+    }
+
     const lines = report.split('\n').filter(line => line.trim());
     
     // Look for key trading suggestions and price predictions
@@ -59,7 +64,7 @@ function extractHighlights(report) {
     ).slice(0, 5); // Take first 5 relevant lines
     
     return highlights.length > 0 
-      ? highlights.join('\n') 
+      ? "Key Highlights:\n" + highlights.join('\n')
       : 'Daily crypto analysis completed. Check the full report for details.';
       
   } catch (error) {
